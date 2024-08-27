@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -101,8 +102,19 @@ func (p *SecretDescriptor) GetFileName() (path string) {
 	// Translate slashes to underscore if required.
 	if len(p.translate) != 0 {
 		fileName = strings.ReplaceAll(fileName, string(os.PathSeparator), p.translate)
+		//windows may accept different path separators so we have to check 
+		if runtime.GOOS == "windows" {
+			fileName = strings.ReplaceAll(fileName, "/", p.translate) //Remove leading slash
+			
+		}
+
 	} else {
-		fileName = strings.TrimLeft(fileName, string(os.PathSeparator)) // Strip leading slash
+		fileName = strings.TrimLeft(fileName, string(os.PathSeparator)) // Remove leading slash
+		if runtime.GOOS == "windows" {
+			fileName = strings.TrimLeft(fileName, "/") // Remove leading slash
+			//fileName = strings.TrimPrefix(fileName, "/") 
+			
+		}
 	}
 
 	return fileName
