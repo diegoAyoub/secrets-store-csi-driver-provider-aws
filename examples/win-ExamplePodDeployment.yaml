@@ -4,12 +4,12 @@ metadata:
   name: win-app
   namespace: default
 spec:
-  serviceAccountName: nginx-deployment-sa 
+  serviceAccountName: test-deployment-sa 
   nodeSelector:
     kubernetes.io/os: windows
   containers:
   - name: app
-    image: 905418260608.dkr.ecr.us-west-2.amazonaws.com/final-demo-db:latest
+    image: 905418260608.dkr.ecr.us-west-2.amazonaws.com/csi-intern-project-test:v2.0 #change to public ecr
     command:
       - powershell
       - "-Command"
@@ -24,4 +24,4 @@ spec:
       driver: secrets-store.csi.k8s.io
       readOnly: true
       volumeAttributes:
-        secretProviderClass: "nginx-deployment-aws-secrets"
+        secretProviderClass: "test-deployment-aws-secrets"
