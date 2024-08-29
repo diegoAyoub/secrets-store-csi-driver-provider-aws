@@ -15,7 +15,7 @@ AWS offers two services to manage secrets and parameters conveniently in your co
     helm install -n kube-system csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver
     ```
   **Note** that older versions of the driver may require the ```--set grpcSupportedProviders="aws"``` flag on the install step.
-* If you wish to install on Windows use the ```--set windows.enabled=true``` flag on the install step
+* If you wish to install on Windows use the ```--set windows.enabled=true``` flag on the install step.
 * IAM Roles for Service Accounts ([IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)) as described in the usage section below.
 
 [^1]: The CSI Secret Store driver runs as a DaemonSet, and as described in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html#fargate-considerations), DaemonSet is not supported on Fargate. 
@@ -87,6 +87,13 @@ To verify the secret has been mounted properly, See the example below for Linux:
 ```shell
 kubectl exec -it $(kubectl get pods | awk '/nginx-deployment/{print $1}' | head -1) cat /mnt/secrets-store/MySecret; echo
 ```
+
+For Windows, see the example below:
+
+```shell
+kubectl exec -it [INSERT WINDOWS DEPLOYMENT NAME] -- powershell -Command "cd mnt\secrets-store; Get-Content MySecret"
+```
+
 ### Troubleshooting
 Most errors can be viewed by describing the pod deployment. For the deployment, find the pod names using get pods (use -n **&lt;NAMESPACE&gt;** if you are not using the default namespace):
 ```shell
@@ -225,8 +232,14 @@ make
 ```
 Once the image is in your repo you can install it into your cluster from your repo rather than the public repo:
 ```bash
-envsubst < deployment/private-installer.yaml | kubectl apply -f -
+envsubst < deployment/private-installer.yaml | kubectl apply -f 
 ```
+For Windows:
+```bash
+envsubst < deployment/win-private-installer.yaml | kubectl apply -f -
+```
+
+
 
 ### Configure the Underlying Secrets Manager Client to Use FIPS Endpoint
 
