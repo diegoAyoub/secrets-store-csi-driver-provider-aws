@@ -28,14 +28,14 @@ spec:
       labels:
         app: nginx
     spec:
-      serviceAccountName: nginx-deployment-sa
+      serviceAccountName: test-deployment-sa
       volumes:
       - name: secrets-store-inline
         csi:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: "nginx-deployment-aws-secrets"
+            secretProviderClass: "test-deployment-aws-secrets"
       containers:
       - name: nginx-deployment
         image: nginx
