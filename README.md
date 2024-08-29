@@ -15,14 +15,20 @@ AWS offers two services to manage secrets and parameters conveniently in your co
     helm install -n kube-system csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver
     ```
   **Note** that older versions of the driver may require the ```--set grpcSupportedProviders="aws"``` flag on the install step.
+* If you wish to install on Windows use the ```--set windows.enabled=true``` flag on the install step
 * IAM Roles for Service Accounts ([IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)) as described in the usage section below.
 
 [^1]: The CSI Secret Store driver runs as a DaemonSet, and as described in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html#fargate-considerations), DaemonSet is not supported on Fargate. 
 
 ### Installing the AWS Provider
-To install the Secrets Manager and Config Provider use the YAML file in the deployment directory:
+To install the Secrets Manager and Config Provider on Linux use the YAML file in the deployment directory:
 ```shell
 kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/deployment/aws-provider-installer.yaml
+```
+
+To install it on Windows:
+```shell
+kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/deployment/win-aws-provider-installer.yaml
 ```
 
 ## Usage
@@ -40,7 +46,7 @@ aws --region "$REGION" secretsmanager  create-secret --name MySecret --secret-st
 ```
 Create an access policy for the pod scoped down to just the secrets it should have and save the policy ARN in a shell variable:
 ```shell
-POLICY_ARN=$(aws --region "$REGION" --query Policy.Arn --output text iam create-policy --policy-name nginx-deployment-policy --policy-document '{
+POLICY_ARN=$(aws --region "$REGION" --query Policy.Arn --output text iam create-policy --policy-name test-deployment-policy --policy-document '{
     "Version": "2012-10-17",
     "Statement": [ {
         "Effect": "Allow",
@@ -57,7 +63,7 @@ eksctl utils associate-iam-oidc-provider --region="$REGION" --cluster="$CLUSTERN
 ```
 Next create the service account to be used by the pod and associate the above IAM policy with that service account. For this example we use *nginx-deployment-sa* for the service account name:
 ```shell
-eksctl create iamserviceaccount --name nginx-deployment-sa --region="$REGION" --cluster "$CLUSTERNAME" --attach-policy-arn "$POLICY_ARN" --approve --override-existing-serviceaccounts
+eksctl create iamserviceaccount --name test-deployment-sa --region="$REGION" --cluster "$CLUSTERNAME" --attach-policy-arn "$POLICY_ARN" --approve --override-existing-serviceaccounts
 ```
 For a private cluster, ensure that the VPC the cluster is in has an AWS STS endpoint. For more information, see [Interface VPC endpoints](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_interface_vpc_endpoints.html) in the AWS IAM User Guide.
 
@@ -70,7 +76,13 @@ Finally we can deploy our pod. The ExampleDeployment.yaml in the examples direct
 kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/examples/ExampleDeployment.yaml
 ```
 
-To verify the secret has been mounted properly, See the example below:
+For Windows, the [INSERT FINAL FILE NAME] in the examples directory contains a sample Windows deployment that mounts the secrets under \mnt\secrets-store in the pod:
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/examples/[INSERT FINAL FILE NAME].yaml
+```
+
+To verify the secret has been mounted properly, See the example below for Linux:
 
 ```shell
 kubectl exec -it $(kubectl get pods | awk '/nginx-deployment/{print $1}' | head -1) cat /mnt/secrets-store/MySecret; echo
