@@ -111,8 +111,7 @@ func (p *SecretDescriptor) GetFileName() (path string) {
 	} else {
 		fileName = strings.TrimLeft(fileName, string(os.PathSeparator)) // Remove leading slash
 		if runtime.GOOS == "windows" {
-			fileName = strings.TrimLeft(fileName, "/") // Remove leading slash
-			//fileName = strings.TrimPrefix(fileName, "/") 
+			fileName = strings.TrimLeft(fileName, "/") // Remove leading slash 
 			
 		}
 	}

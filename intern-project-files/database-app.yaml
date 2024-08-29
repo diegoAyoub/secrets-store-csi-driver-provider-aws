@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: database-app
+  namespace: default
+spec:
+  serviceAccountName: final-demo-sa 
+  nodeSelector:
+    kubernetes.io/os: windows
+  containers:
+  - name: app
+    image: 905418260608.dkr.ecr.us-west-2.amazonaws.com/final-demo-db:latest
+    command:
+      - powershell
+      - "-Command"
+      - "while ($true) { Start-Sleep -Seconds 30 }"
+    volumeMounts:
+    - name: secrets-store-inline
+      mountPath: "C:\\mnt\\secrets-store"
+      readOnly: true
+  volumes:
+  - name: secrets-store-inline
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: "db-secret-provider"
+
+

@@ -121,9 +121,10 @@ func (s *CSIDriverProviderServer) Mount(ctx context.Context, req *v1alpha1.Mount
 		return nil, err
 	}
 
+	klog.Infof("Servicing mount request for pod %s in namespace %s using service account %s with region(s) %s", podName, nameSpace, svcAcct, strings.Join(regions, ", "))
+
 	awsSessions, err := s.getAwsSessions(nameSpace, svcAcct, ctx, regions)
 	if err != nil {
-		klog.Infof("error produced when trying to get aws region")
 		return nil, err
 	}
 	if len(awsSessions) > 2 {
@@ -275,7 +276,7 @@ func (s *CSIDriverProviderServer) getRegionFromNode(ctx context.Context, namespa
 
 // Private helper to write a new secret or perform an update on a previously mounted secret.
 //
-// If the driver writes the secrets just return the driver data. Otherwise,
+// If the driver writes the secrets just return the dirver data. Otherwise,
 // we write the secret to a temp file and then rename in order to get as close
 // to an atomic update as the file system supports. This is to avoid having
 // pod applications inadvertantly reading an empty or partial files as it is
